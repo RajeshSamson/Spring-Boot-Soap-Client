@@ -1,0 +1,54 @@
+plugins {
+    id 'org.springframework.boot' version '2.1.8.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+    id 'java'
+}
+
+group = 'com.rajeshsamson.techpastors'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    jaxb
+}
+
+dependencies {
+    jaxb(
+            'com.sun.xml.bind:jaxb-core:2.3.0.1',
+            'com.sun.xml.bind:jaxb-xjc:2.3.2',
+            'com.sun.xml.bind:jaxb-impl:2.3.2',
+            'javax.xml.bind:jaxb-api:2.3.1'
+    )
+    implementation 'com.sun.xml.bind:jaxb-core:2.3.0.1'
+    implementation 'com.sun.xml.bind:jaxb-xjc:2.3.2'
+    implementation 'com.sun.xml.bind:jaxb-impl:2.3.2'
+    implementation 'javax.xml.bind:jaxb-api:2.3.1'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-web-services'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+
+task generateJavaClasses {
+    System.setProperty('javax.xml.accessExternalSchema', 'all')
+    def jaxbTargetDir = file("src/main/java/")
+    doLast {
+        jaxbTargetDir.mkdirs()
+        ant.taskdef(
+                name: 'xjc',
+                classname: 'com.sun.tools.xjc.XJCTask',
+                classpath: configurations.jaxb.asPath
+        )
+        ant.jaxbTargetDir = jaxbTargetDir
+        ant.xjc(
+                destdir: '${jaxbTargetDir}',
+                package: 'com.rajeshsamson.techpastors.generated',
+                schema: 'src/main/resources/wsdl/Weather.wsdl',
+                language: 'WSDL'
+        )
+    }
+}
